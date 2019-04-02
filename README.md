@@ -1,7 +1,9 @@
 # BubbleBarrage
 仿QQ音乐冒泡弹幕
 
- bubbleBarrage = new BubbleBarrage()
+#java code
+```java
+bubbleBarrage = new BubbleBarrage()
                 .init(this, bubbleBarrageContainer, R.layout.layout_bubble_barrage_item)
                 .setIntervalTime(1000)
                 .setVisibleCount(3)
@@ -13,3 +15,4 @@
                         ((TextView) view.findViewById(R.id.tv_content)).setText(data.get(index));
                     }
                 }).start(bubbles, 1000);
+```

@@ -16,3 +16,4 @@ bubbleBarrage = new BubbleBarrage()
                     }
                 }).start(bubbles, 1000);
 ```
+![](https://github.com/Vonnie0709/BubbleBarrage/blob/master/raw/8b7333133b84f9d879faec8f0318906.jpg)

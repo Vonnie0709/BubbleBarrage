@@ -139,11 +139,15 @@ public class BubbleBarrage {
                 if (index > barrages.size() - 1) {
                     index = 0;
                     barrages.clear();
-                    handler.postDelayed(this, intervalTime);
+                    if (handler != null) {
+                        handler.postDelayed(this, intervalTime);
+                    }
                 } else {
                     addBarrageToContainer(index);
                     index++;
-                    handler.postDelayed(this, intervalTime);
+                    if (handler != null) {
+                        handler.postDelayed(this, intervalTime);
+                    }
                 }
                 Log.i(TAG, "current index -->" + index);
             }

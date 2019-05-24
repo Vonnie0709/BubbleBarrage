@@ -90,4 +90,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         bubbleBarrage.appendBarrages(appends);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        bubbleBarrage.destroyView();
+    }
 }

@@ -135,7 +135,7 @@ public class BubbleBarrage {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                Log.e("ABC", "current in index -->" + index + "barrage size -->" + barrages.size());
+                Log.e(TAG, "current in index -->" + index + "barrage size -->" + barrages.size());
                 if (index > barrages.size() - 1) {
                     index = 0;
                     barrages.clear();
@@ -145,7 +145,7 @@ public class BubbleBarrage {
                     index++;
                     handler.postDelayed(this, intervalTime);
                 }
-                Log.i("ABC", "current index -->" + index);
+                Log.i(TAG, "current index -->" + index);
             }
         };
 
@@ -161,7 +161,7 @@ public class BubbleBarrage {
      */
     public BubbleBarrage insertToNext(String barrage) {
         barrages.add(index, barrage);
-        Log.i("ABC", "barrages size -->" + barrages.size());
+        Log.i(TAG, "barrages size -->" + barrages.size());
         return this;
     }
 
@@ -338,6 +338,14 @@ public class BubbleBarrage {
 
         }
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, metrics);
+    }
+
+    /**
+     * destroy view
+     */
+    public void destroyView() {
+        handler.removeCallbacksAndMessages(null);
+        handler = null;
     }
 
     /**

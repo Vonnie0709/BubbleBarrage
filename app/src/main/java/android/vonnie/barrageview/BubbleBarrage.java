@@ -24,7 +24,7 @@ import java.util.List;
  * @author LongpingZou
  * @date 2019/3/29
  */
-public class BubbleBarrage {
+public class BubbleBarrage<T> {
     private final static String TAG = "BubbleBarrage";
     private LayoutTransition transition = new LayoutTransition();
     private Context context;
@@ -49,9 +49,9 @@ public class BubbleBarrage {
     /**
      * barrage load listener
      */
-    private OnBarrageLoadListener onBarrageLoadListener;
+    private OnBarrageLoadListener<T> onBarrageLoadListener;
     private int margin = 5;
-    private List<String> barrages = new ArrayList<>();
+    private List<T> barrages = new ArrayList<>();
 
     /**
      * initialize bubble barrage
@@ -61,7 +61,7 @@ public class BubbleBarrage {
      * @param layout    item layout res id
      * @return
      */
-    public BubbleBarrage init(Context context, LinearLayout container, int layout) {
+    public BubbleBarrage<T> init(Context context, LinearLayout container, int layout) {
         this.context = context;
         this.layout = layout;
         this.barrageContainer = container;
@@ -76,7 +76,7 @@ public class BubbleBarrage {
      *
      * @param intervalTime interval time
      */
-    public BubbleBarrage setIntervalTime(int intervalTime) {
+    public BubbleBarrage<T> setIntervalTime(int intervalTime) {
         this.intervalTime = intervalTime;
         visibleTime = intervalTime * visibleCount;
         return this;
@@ -88,7 +88,7 @@ public class BubbleBarrage {
      * @param count visible counts
      * @return
      */
-    public BubbleBarrage setVisibleCount(int count) {
+    public BubbleBarrage<T> setVisibleCount(int count) {
         this.visibleCount = count;
         visibleTime = intervalTime * visibleCount;
         return this;
@@ -99,7 +99,7 @@ public class BubbleBarrage {
      *
      * @param margin dp
      */
-    public BubbleBarrage setItemMargin(int margin) {
+    public BubbleBarrage<T> setItemMargin(int margin) {
         this.margin = (int) parseToDp(margin);
         return this;
     }
@@ -110,7 +110,7 @@ public class BubbleBarrage {
      *
      * @param onBarrageLoadListener
      */
-    public BubbleBarrage setOnBarrageLoadListener(OnBarrageLoadListener onBarrageLoadListener) {
+    public BubbleBarrage<T> setOnBarrageLoadListener(OnBarrageLoadListener<T> onBarrageLoadListener) {
         this.onBarrageLoadListener = onBarrageLoadListener;
         return this;
     }
@@ -121,7 +121,7 @@ public class BubbleBarrage {
      * @param stringList
      * @param delay
      */
-    public BubbleBarrage start(final List<String> stringList, int delay) {
+    public BubbleBarrage<T> start(final List<T> stringList, int delay) {
         if (stringList == null) {
             try {
                 throw new Exception("barrage data should not be null");
@@ -139,15 +139,12 @@ public class BubbleBarrage {
                 if (index > barrages.size() - 1) {
                     index = 0;
                     barrages.clear();
-                    if (handler != null) {
-                        handler.postDelayed(this, intervalTime);
-                    }
                 } else {
                     addBarrageToContainer(index);
                     index++;
-                    if (handler != null) {
-                        handler.postDelayed(this, intervalTime);
-                    }
+                }
+                if (handler != null) {
+                    handler.postDelayed(this, intervalTime);
                 }
                 Log.i(TAG, "current index -->" + index);
             }
@@ -163,7 +160,7 @@ public class BubbleBarrage {
      *
      * @param barrage
      */
-    public BubbleBarrage insertToNext(String barrage) {
+    public BubbleBarrage<T> insertToNext(T barrage) {
         barrages.add(index, barrage);
         Log.i(TAG, "barrages size -->" + barrages.size());
         return this;
@@ -175,7 +172,7 @@ public class BubbleBarrage {
      *
      * @param barrages
      */
-    public BubbleBarrage appendBarrages(List<String> barrages) {
+    public BubbleBarrage<T> appendBarrages(List<T> barrages) {
         this.barrages.addAll(barrages);
         return this;
     }
@@ -185,7 +182,7 @@ public class BubbleBarrage {
      *
      * @param barrage
      */
-    public BubbleBarrage appendBarrage(String barrage) {
+    public BubbleBarrage<T> appendBarrage(T barrage) {
         barrages.add(barrage);
         return this;
     }
@@ -355,7 +352,7 @@ public class BubbleBarrage {
     /**
      * when create barrage, call this listener
      */
-    interface OnBarrageLoadListener {
+    interface OnBarrageLoadListener<T> {
         /**
          * load barrage
          *
@@ -363,6 +360,6 @@ public class BubbleBarrage {
          * @param data  data array
          * @param index barrage index
          */
-        void loadBarrage(View view, List<String> data, int index);
+        void loadBarrage(View view, List<T> data, int index);
     }
 }

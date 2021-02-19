@@ -5,19 +5,15 @@ import android.animation.LayoutTransition;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.LinearLayout;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,129 +25,77 @@ public class BubbleBarrage<T> {
     private LayoutTransition transition = new LayoutTransition();
     private Context context;
     private LinearLayout barrageContainer;
-    private int layout;
+    private int layoutId;
     private int index = 0;
     /**
      * 执行间隔
      */
-    private long intervalTime = 2000;
+    private long intervalTime;
     /**
      * 显示的数量
      */
-    private int visibleCount = 3;
+    private int visibleCount;
     /**
      * 每个弹幕要展示的时间=推送间隔*要显示的个数
      */
-    private long visibleTime = intervalTime * visibleCount;
+    private long visibleTime;
 
-    private DisplayMetrics metrics;
     private Handler handler = new Handler();
     /**
      * barrage load listener
      */
     private OnBarrageLoadListener<T> onBarrageLoadListener;
-    private int margin = 5;
-    private List<T> barrages = new ArrayList<>();
+    private int margin;
+    private List<T> barrages;
+    private long delayStart;
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.e(TAG, "current in index -->" + index + "barrage size -->" + barrages.size());
+            if (index > barrages.size() - 1) {
+                index = 0;
+                barrages.clear();
+            } else {
+                addBarrageToContainer(index);
+                index++;
+                if (handler != null) {
+                    handler.postDelayed(this, intervalTime);
+                }
+            }
+            Log.i(TAG, "current index -->" + index);
+        }
+    };
 
-    /**
-     * initialize bubble barrage
-     *
-     * @param context
-     * @param container bubble barrage container  {@link LinearLayout}
-     * @param layout    item layout res id
-     * @return
-     */
-    public BubbleBarrage<T> init(Context context, LinearLayout container, int layout) {
-        this.context = context;
-        this.layout = layout;
-        this.barrageContainer = container;
-        container.setLayoutTransition(transition);
+    public BubbleBarrage(Builder<T> builder) {
+        this.intervalTime = builder.intervalTime;
+        this.visibleCount = builder.visibleCount;
+        this.barrages = builder.barrages;
+        this.margin = builder.margin;
+        this.delayStart = builder.delayStart;
+        this.visibleTime = intervalTime * visibleCount;
+        this.layoutId = builder.layoutId;
+        this.barrageContainer = builder.container;
+        this.onBarrageLoadListener = builder.onBarrageLoadListener;
+        barrageContainer.setLayoutTransition(transition);
         setAppearTransition();
         setDisappearTransition();
-        return this;
     }
 
-    /**
-     * setting interval time
-     *
-     * @param intervalTime interval time
-     */
-    public BubbleBarrage<T> setIntervalTime(int intervalTime) {
-        this.intervalTime = intervalTime;
-        visibleTime = intervalTime * visibleCount;
-        return this;
-    }
-
-    /**
-     * setting visible counts
-     *
-     * @param count visible counts
-     * @return
-     */
-    public BubbleBarrage<T> setVisibleCount(int count) {
-        this.visibleCount = count;
-        visibleTime = intervalTime * visibleCount;
-        return this;
-    }
-
-    /**
-     * setting margins
-     *
-     * @param margin dp
-     */
-    public BubbleBarrage<T> setItemMargin(int margin) {
-        this.margin = (int) parseToDp(margin);
-        return this;
-    }
-
-
-    /**
-     * set barrage load listener
-     *
-     * @param onBarrageLoadListener
-     */
-    public BubbleBarrage<T> setOnBarrageLoadListener(OnBarrageLoadListener<T> onBarrageLoadListener) {
-        this.onBarrageLoadListener = onBarrageLoadListener;
-        return this;
-    }
 
     /**
      * start to play barrage
-     *
-     * @param stringList
-     * @param delay
      */
-    public BubbleBarrage<T> start(final List<T> stringList, int delay) {
-        if (stringList == null) {
+    public void start(Context context) {
+        this.context = context;
+        if (barrages == null) {
             try {
                 throw new Exception("barrage data should not be null");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return this;
+            return;
         }
-        barrages.clear();
-        barrages.addAll(stringList);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                Log.e(TAG, "current in index -->" + index + "barrage size -->" + barrages.size());
-                if (index > barrages.size() - 1) {
-                    index = 0;
-                    barrages.clear();
-                } else {
-                    addBarrageToContainer(index);
-                    index++;
-                }
-                if (handler != null) {
-                    handler.postDelayed(this, intervalTime);
-                }
-                Log.i(TAG, "current index -->" + index);
-            }
-        };
-
-        handler.postDelayed(runnable, delay);
-        return this;
+        handler.postDelayed(runnable, delayStart);
     }
 
 
@@ -160,10 +104,12 @@ public class BubbleBarrage<T> {
      *
      * @param barrage
      */
-    public BubbleBarrage<T> insertToNext(T barrage) {
+    public void insertToNext(T barrage) {
         barrages.add(index, barrage);
         Log.i(TAG, "barrages size -->" + barrages.size());
-        return this;
+        if (index == 0) {
+            handler.postDelayed(runnable, delayStart);
+        }
     }
 
 
@@ -172,9 +118,11 @@ public class BubbleBarrage<T> {
      *
      * @param barrages
      */
-    public BubbleBarrage<T> appendBarrages(List<T> barrages) {
+    public void appendBarrages(List<T> barrages) {
         this.barrages.addAll(barrages);
-        return this;
+        if (index == 0) {
+            handler.postDelayed(runnable, delayStart);
+        }
     }
 
     /**
@@ -182,10 +130,13 @@ public class BubbleBarrage<T> {
      *
      * @param barrage
      */
-    public BubbleBarrage<T> appendBarrage(T barrage) {
-        barrages.add(barrage);
-        return this;
+    public void appendBarrage(T barrage) {
+        this.barrages.add(barrage);
+        if (index == 0) {
+            handler.postDelayed(runnable, delayStart);
+        }
     }
+
 
     /**
      * set transition of view appearing
@@ -282,7 +233,7 @@ public class BubbleBarrage<T> {
      * @return
      */
     private View createBarrage(int index) {
-        View barrage = LayoutInflater.from(context).inflate(layout, null);
+        View barrage = LayoutInflater.from(context).inflate(layoutId, null);
         //setting barrages load listener
         if (onBarrageLoadListener != null) {
             onBarrageLoadListener.loadBarrage(barrage, barrages, index);
@@ -323,25 +274,6 @@ public class BubbleBarrage<T> {
 
 
     /**
-     * parse px to dp
-     *
-     * @param value
-     * @return
-     */
-    private float parseToDp(int value) {
-        if (metrics == null) {
-            metrics = new DisplayMetrics();
-            try {
-                ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-            }
-
-        }
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, metrics);
-    }
-
-    /**
      * destroy view
      */
     public void destroyView() {
@@ -361,5 +293,61 @@ public class BubbleBarrage<T> {
          * @param index barrage index
          */
         void loadBarrage(View view, List<T> data, int index);
+    }
+
+
+    public static class Builder<T> {
+        private long intervalTime = 2000;
+        private int visibleCount = 3;
+        private int margin = 5;
+        private long delayStart = 0;
+        private List<T> barrages;
+        private int layoutId;
+        private LinearLayout container;
+        private OnBarrageLoadListener<T> onBarrageLoadListener;
+
+        public Builder<T> setIntervalTime(long intervalTime) {
+            this.intervalTime = intervalTime;
+            return this;
+        }
+
+        public Builder<T> setVisibleCount(int visibleCount) {
+            this.visibleCount = visibleCount;
+            return this;
+        }
+
+        public Builder<T> setItemMargin(int margin) {
+            this.margin = margin;
+            return this;
+        }
+
+        public Builder<T> setBarrages(List<T> barrages) {
+            this.barrages = barrages;
+            return this;
+        }
+
+        public Builder<T> setDelayStart(long delayStart) {
+            this.delayStart = delayStart;
+            return this;
+        }
+
+        public Builder<T> setLayoutId(int layoutId) {
+            this.layoutId = layoutId;
+            return this;
+        }
+
+        public Builder<T> setContainer(LinearLayout container) {
+            this.container = container;
+            return this;
+        }
+
+        public Builder<T> setOnBarrageLoadListener(OnBarrageLoadListener<T> onBarrageLoadListener) {
+            this.onBarrageLoadListener = onBarrageLoadListener;
+            return this;
+        }
+
+        public BubbleBarrage<T> build() {
+            return new BubbleBarrage<T>(this);
+        }
     }
 }

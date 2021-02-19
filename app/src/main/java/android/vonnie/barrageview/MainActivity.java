@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        initData();
+//        initData();
         initBubbleBarrage();
     }
 
@@ -45,19 +45,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initBubbleBarrage() {
-        bubbleBarrage = new BubbleBarrage<String>()
-                .init(this, bubbleBarrageContainer, R.layout.layout_bubble_barrage_item)
+        bubbleBarrage = new BubbleBarrage.Builder<String>()
+                .setContainer(bubbleBarrageContainer)
+                .setLayoutId(R.layout.layout_bubble_barrage_item)
                 .setIntervalTime(1000)
-                .setVisibleCount(3)
+                .setVisibleCount(6)
                 .setItemMargin(20)
+                .setDelayStart(1000)
+                .setBarrages(bubbles)
                 .setOnBarrageLoadListener(new BubbleBarrage.OnBarrageLoadListener<String>() {
                     @Override
                     public void loadBarrage(View view, List<String> data, int index) {
                         view.findViewById(R.id.iv_head).setBackground(ContextCompat.getDrawable(MainActivity.this, R.drawable.test_header));
                         ((TextView) view.findViewById(R.id.tv_content)).setText(data.get(index));
                     }
-                })
-                .start(bubbles, 1000);
+                }).build();
+        bubbleBarrage.start(this);
     }
 
     private void initData() {
